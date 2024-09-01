@@ -1,0 +1,60 @@
+public class DBHelper extends SQLiteOpenHelper {
+
+    private static final String DATABASE_NAME = "tasks.db";
+    private static final int DATABASE_VERSION = 1;
+    private static final String TABLE_NAME = "tasks";
+    private static final String COLUMN_ID = "_id";
+    private static final String COLUMN_TASK_NAME = "task_name";
+
+    public DBHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        String createTable = "CREATE TABLE " + TABLE_NAME + " (" +
+                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_TASK_NAME + " TEXT NOT NULL);";
+        db.execSQL(createTable);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        onCreate(db);
+    }
+
+    // Insert a new task
+    public boolean insertTask(String task) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_TASK_NAME, task);
+        long result = db.insert(TABLE_NAME, null, values);
+        db.close();
+        return result != -1;
+    }
+
+    // Get all tasks
+    public Cursor getAllTasks() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_NAME, null, null, null, null, null, null);
+    }
+
+    // Update an existing task
+    public boolean updateTask(long id, String newTask) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_TASK_NAME, newTask);
+        int rowsUpdated = db.update(TABLE_NAME, values, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
+        db.close();
+        return rowsUpdated > 0;
+    }
+
+    // Delete a task
+    public boolean deleteTask(long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rowsDeleted = db.delete(TABLE_NAME, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
+        db.close();
+        return rowsDeleted > 0;
+    }
+}
